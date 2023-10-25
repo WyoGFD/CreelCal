@@ -64,7 +64,7 @@ survey_times_to_tui <- function(times, tz) {
     ),
     recurrenceRule = NA_character_,
     start = lubridate::with_tz(.data$survey_time, tz),
-    end = .data$tart,
+    end = .data$start,
     category = "time",
     location = NA_character_,
     title = format(.data$start, "%R")
