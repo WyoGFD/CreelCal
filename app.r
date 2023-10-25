@@ -1,9 +1,3 @@
-# library(dplyr)
-# library(shiny)
-# library(shinydashboard)
-# library(lubridate) # needed for months(1) to work?!?!
-# library(toastui)
-
 ui <- function(request) {
 
   shinydashboard::dashboardPage(
@@ -60,6 +54,10 @@ server <- function(input, output, session) {
     # current active date in dates calendar
     def_date = NULL
   )
+
+  rtz <- shiny::reactive({
+    lutz::tz_lookup_coords(rct$lat, rct$lng, "accurate")
+  })
 
   ##############################################################################
   #
@@ -315,6 +313,7 @@ server <- function(input, output, session) {
       ) |>
       toastui::cal_props(as.data.frame(tui_calendars)) |>
       toastui::cal_month_options(isAlways6Week = FALSE) |>
+      toastui::cal_timezone(rtz()) |>
       toastui::cal_events(
         clickSchedule = htmlwidgets::JS(
           "function(event) {",
@@ -398,7 +397,7 @@ server <- function(input, output, session) {
     shiny::req(time_check())
 
     rct$times |>
-      survey_times_to_tui() |>
+      survey_times_to_tui(rtz()) |>
       toastui::calendar(
         defaultDate = input$sd,
         navigation = TRUE,
@@ -411,7 +410,8 @@ server <- function(input, output, session) {
         )
       ) |>
       toastui::cal_props(as.data.frame(tui_calendars)) |>
-      toastui::cal_month_options(isAlways6Week = FALSE)
+      toastui::cal_month_options(isAlways6Week = FALSE) |>
+      toastui::cal_timezone(rtz())
 
   })
 
@@ -426,13 +426,7 @@ server <- function(input, output, session) {
       paste0(gsub("\\W", "_", input$sname), ".xlsx")
     },
     content = function(file) {
-      rct$times |>
-        dplyr::mutate(id = .data$weekend + 1) |>
-        dplyr::inner_join(tui_calendars, by = "id") |>
-        dplyr::select(
-          dplyr::all_of(c("date", "stratum", category = "name", "survey_time"))
-        ) |>
-        writexl::write_xlsx(file)
+      times_to_xl(rct$times, input$sname, rtz(), file)
     }
   )
 
@@ -443,8 +437,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       pdf(file)
-      plots <- calr_plots(rct$dates, rct$times)
-      lapply(plots, plot)
+      lapply(calr_plots(rct$dates, rct$times, rtz()), plot)
       dev.off()
     }
   )
@@ -455,12 +448,10 @@ server <- function(input, output, session) {
       paste0(gsub("\\W", "_", input$sname), ".ics")
     },
     content = function(file) {
-      times_to_ics(input$sname, rct$times, out_file = file)
+      times_to_ics(rct$times, input$sname, rtz(), out_file = file)
     }
   )
 
 }
 
-if (interactive())
-  shiny::shinyApp(ui, server)
-
+shiny::shinyApp(ui, server)

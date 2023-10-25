@@ -63,8 +63,9 @@ cti_time_sub <- function(start, uid, summary, descr = NULL) {
 }
 
 # convert survey times to ics
-times_to_ics <- function(cal_name,
-                         times,
+times_to_ics <- function(times,
+                         survey_name,
+                         tz,
                          incl_dates = TRUE,
                          out_file = NULL) {
   .data <- rlang::.data
@@ -75,7 +76,7 @@ times_to_ics <- function(cal_name,
     "PRODID:-//ericn.shinyapps.io//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    glue::glue("X-WR-CALNAME:{cal_name}"),
+    glue::glue("X-WR-CALNAME:{survey_name}"),
     "X-WR-CALDESC:WGFD Creel Surveys"
   )
 
@@ -83,12 +84,15 @@ times_to_ics <- function(cal_name,
     dplyr::transmute(
       start = .data$survey_time,
       uid = paste(
-        gsub("\\W", "", cal_name),
+        gsub("\\W", "", survey_name),
         dplyr::row_number(),
         "wyo.gov",
         sep = "-"
       ),
-      summary = paste("Creel Survey:", format(.data$survey_time, "%R")),
+      summary = paste(
+        "Creel Survey:",
+        format(lubridate::with_tz(.data$survey_time, tz), "%I:%M %p")
+      ),
       descr = sprintf(
         "Stratum %d<br />%s<br />Randomized Survey Time",
         .data$stratum,
@@ -105,18 +109,21 @@ times_to_ics <- function(cal_name,
     dates_ics <- times |>
       dplyr::group_by(.data$date, .data$stratum, .data$weekend) |>
       dplyr::summarize(
-        st = paste(format(.data$survey_time, "%R"), collapse = ", "),
+        st = paste(
+          format(lubridate::with_tz(.data$survey_time, tz), "%I:%M %p"),
+          collapse = ", "
+        ),
         .groups = "drop"
       ) |>
       dplyr::transmute(
         start = .data$date,
         uid = paste(
-          gsub("\\W", "", cal_name),
+          gsub("\\W", "", survey_name),
           dplyr::row_number() + nrow(times),
           "wyo.gov",
           sep = "-"
         ),
-        summary = cal_name,
+        summary = survey_name,
         descr = sprintf(
           "Stratum %d<br />%s<br />Survey Times: %s",
           .data$stratum,
