@@ -60,6 +60,10 @@ server <- function(input, output, session) {
     # current active date in dates calendar
     def_date = NULL
   )
+  
+  rtz <- shiny::reactive({
+    lutz::tz_lookup_coords(rct$lat, rct$lng, "accurate")
+  })
 
   ##############################################################################
   #
@@ -426,13 +430,7 @@ server <- function(input, output, session) {
       paste0(gsub("\\W", "_", input$sname), ".xlsx")
     },
     content = function(file) {
-      rct$times |>
-        dplyr::mutate(id = .data$weekend + 1) |>
-        dplyr::inner_join(tui_calendars, by = "id") |>
-        dplyr::select(
-          dplyr::all_of(c("date", "stratum", category = "name", "survey_time"))
-        ) |>
-        writexl::write_xlsx(file)
+      times_to_xl(rct$times, input$sname, rtz(), file)
     }
   )
 
@@ -443,8 +441,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       pdf(file)
-      plots <- calr_plots(rct$dates, rct$times)
-      lapply(plots, plot)
+      lapply(calr_plots(rct$dates, rct$times, rtz()), plot)
       dev.off()
     }
   )
@@ -455,7 +452,7 @@ server <- function(input, output, session) {
       paste0(gsub("\\W", "_", input$sname), ".ics")
     },
     content = function(file) {
-      times_to_ics(input$sname, rct$times, out_file = file)
+      times_to_ics(rct$times, input$sname, rtz(), out_file = file)
     }
   )
 
