@@ -103,9 +103,9 @@ screen3_ui <- shinyglide::screen(
     shiny::h2("Survey Setup - Available Dates"),
     shiny::helpText(
       "Use the calendar below to modify how dates are categorized",
-      "for this survey if needed. Make sure to mark holidays that fall on",
-      "weekdays to 'Weekday/Holiday', and you can also mark certain dates",
-      "totally unavailable or mandatory."
+      "for this survey if needed. You can also mark certain dates",
+      "totally unavailable for sampling (never selected) or mandatory",
+      "(always selected)."
     )
   ),
   shiny::column(
@@ -123,8 +123,8 @@ screen4_ui <- shinyglide::screen(
     shiny::h2("Survey Setup - Survey Times"),
     shiny::helpText(
       "Use the inputs below to specify how many counts take place per selected",
-      "sampling day, how many days are selected in each category, and what",
-      "times are available for counts based on sunrise/sunset."
+      "sampling day, how many days are selected in each category per stratum,",
+      "and what times are available for counts based on sunrise/sunset."
     )
   ),
   shiny::column(
@@ -205,7 +205,7 @@ screen5_ui <- shinyglide::screen(
 screen6_ui <- shinyglide::screen(
   shiny::column(
     width = 12,
-    shiny::h2("Survey Complete"),
+    shiny::h2("Export Survey"),
     shiny::helpText(
       "Now that your creel survey has been created, you can download the",
       "survey details in a variety of formats below."
@@ -260,7 +260,11 @@ screen6_ui <- shinyglide::screen(
           "step 3"
         ),
         shiny::tags$li(
-          "Click 'Import'"
+          "Click 'Import' to add the events in the .ics to the new calendar"
+        ),
+        shiny::tags$li(
+          "Now you can share the new creel survey calendar with survey",
+          "personnel, set up reminders and notifications, etc."
         )
       )
     )
