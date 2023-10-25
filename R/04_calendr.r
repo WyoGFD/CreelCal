@@ -25,18 +25,20 @@ calr_month_plot <- function(year, month, cal_data) {
     special.days = cal_days,
     special.col = cal_colors,
     text = cal_text,
-    text.pos = cal_text_pos
+    text.pos = cal_text_pos,
+    text.size = 3
   )
 
 }
 
-calr_plots <- function(dates, times) {
+calr_plots <- function(dates, times, tz) {
   .data <- rlang::.data
 
   survey_days <- times |>
     dplyr::group_by(.data$date) |>
+    dplyr::mutate(survey_time = lubridate::with_tz(.data$survey_time, tz)) |>
     dplyr::summarize(
-      st = paste(format(.data$survey_time, "%R"), collapse = "\n"),
+      st = paste(format(.data$survey_time, "%I:%M %p"), collapse = "\n"),
       .groups = "drop"
     )
 
@@ -46,10 +48,10 @@ calr_plots <- function(dates, times) {
 
   calr_data |>
     dplyr::mutate(
-      year = lubridate::year(date),
-      month = lubridate::month(date)
+      year = lubridate::year(.data$date),
+      month = lubridate::month(.data$date)
     ) |>
-    dplyr::nest_by(year, month, .key = "cal_data") |>
+    dplyr::nest_by(.data$year, .data$month, .key = "cal_data") |>
     purrr::pmap(calr_month_plot)
 
 }

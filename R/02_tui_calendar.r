@@ -51,20 +51,20 @@ survey_dates_to_tui <- function(dates) {
 }
 
 # convert survey times to toastui calendar format
-survey_times_to_tui <- function(times) {
+survey_times_to_tui <- function(times, tz) {
   .data <- rlang::.data
 
   times |>
     dplyr::transmute(
-    calendarId = weekend + 1,
+    calendarId = .data$weekend + 1,
     body = sprintf(
       "Randomized survey time - Stratum %d - %s",
       .data$stratum,
       tui_calendars$name[.data$calendarId]
     ),
     recurrenceRule = NA_character_,
-    start = .data$survey_time,
-    end = .data$survey_time,
+    start = lubridate::with_tz(.data$survey_time, tz),
+    end = .data$start,
     category = "time",
     location = NA_character_,
     title = format(.data$start, "%R")
