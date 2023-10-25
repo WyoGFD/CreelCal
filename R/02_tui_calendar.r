@@ -56,7 +56,7 @@ survey_times_to_tui <- function(times, tz) {
 
   times |>
     dplyr::transmute(
-    calendarId = weekend + 1,
+    calendarId = .data$weekend + 1,
     body = sprintf(
       "Randomized survey time - Stratum %d - %s",
       .data$stratum,
