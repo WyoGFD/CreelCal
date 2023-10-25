@@ -403,7 +403,7 @@ server <- function(input, output, session) {
     shiny::req(time_check())
 
     rct$times |>
-      survey_times_to_tui() |>
+      survey_times_to_tui(rtz()) |>
       toastui::calendar(
         defaultDate = input$sd,
         navigation = TRUE,
