@@ -319,6 +319,7 @@ server <- function(input, output, session) {
       ) |>
       toastui::cal_props(as.data.frame(tui_calendars)) |>
       toastui::cal_month_options(isAlways6Week = FALSE) |>
+      toastui::cal_timezone(rtz()) |>
       toastui::cal_events(
         clickSchedule = htmlwidgets::JS(
           "function(event) {",
@@ -415,7 +416,8 @@ server <- function(input, output, session) {
         )
       ) |>
       toastui::cal_props(as.data.frame(tui_calendars)) |>
-      toastui::cal_month_options(isAlways6Week = FALSE)
+      toastui::cal_month_options(isAlways6Week = FALSE) |>
+      toastui::cal_timezone(rtz())
 
   })
 
