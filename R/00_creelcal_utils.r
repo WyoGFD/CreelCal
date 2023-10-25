@@ -9,7 +9,7 @@ gen_survey_dates <- function(start_date,
     stratum_unit,
     "Days" = lubridate::days,
     "Weeks" = lubridate::weeks,
-    "Months" = base::months
+    "Months" = lubridate:::months.numeric
   )
 
   survey_length <- int_fn(stratum_length) * n_strata
