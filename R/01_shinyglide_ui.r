@@ -40,9 +40,8 @@ screen2_ui <- shinyglide::screen(
     width = 12,
     shiny::h2("Survey Setup - Survey Duration"),
     shiny::helpText(
-      "Enter the start date, stratum length, and number of strata below.",
-      "Then use the calendar to change how specific days are categorized if",
-      "needed."
+      "Enter the start date, stratum length in months, weeks, or days, and",
+      "number of strata for your survey below."
     )
   ),
   shiny::column(
