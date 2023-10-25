@@ -1,7 +1,7 @@
 times_to_xl <- function(times, survey_name, tz, out_file) {
   .data <- rlang::.data
   
-  rct$times |>
+  times |>
     dplyr::group_by(.data$date) |>
     dplyr::mutate(
       id = .data$weekend + 1,
