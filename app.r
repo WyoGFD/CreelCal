@@ -461,6 +461,5 @@ server <- function(input, output, session) {
 
 }
 
-if (interactive())
-  shiny::shinyApp(ui, server)
+shiny::shinyApp(ui, server)
 
