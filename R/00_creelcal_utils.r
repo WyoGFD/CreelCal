@@ -69,7 +69,7 @@ gen_survey_times <- function(dates,
         .data$weekend == 2 ~ 0L,
         .data$weekend == 3 ~ dplyr::n(),
       ),
-      selected = .data$date %in% sample(.data$date, n_sample[1])
+      selected = .data$date %in% sample(.data$date, .data$n_sample[1])
     ) |>
     dplyr::ungroup() |>
     dplyr::filter(.data$selected)

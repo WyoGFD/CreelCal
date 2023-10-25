@@ -1,9 +1,3 @@
-# library(dplyr)
-# library(shiny)
-# library(shinydashboard)
-# library(lubridate) # needed for months(1) to work?!?!
-# library(toastui)
-
 ui <- function(request) {
 
   shinydashboard::dashboardPage(
@@ -60,7 +54,7 @@ server <- function(input, output, session) {
     # current active date in dates calendar
     def_date = NULL
   )
-  
+
   rtz <- shiny::reactive({
     lutz::tz_lookup_coords(rct$lat, rct$lng, "accurate")
   })
@@ -461,4 +455,3 @@ server <- function(input, output, session) {
 }
 
 shiny::shinyApp(ui, server)
-

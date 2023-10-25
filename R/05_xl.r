@@ -1,6 +1,6 @@
 times_to_xl <- function(times, survey_name, tz, out_file) {
   .data <- rlang::.data
-  
+
   times |>
     dplyr::group_by(.data$date) |>
     dplyr::mutate(
@@ -21,5 +21,5 @@ times_to_xl <- function(times, survey_name, tz, out_file) {
       )
     ) |>
     writexl::write_xlsx(out_file)
-  
+
 }
