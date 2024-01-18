@@ -131,6 +131,38 @@ server <- function(input, output, session) {
 
   })
 
+  # stratum length string
+  sl_string <- shiny::reactive({
+    shiny::req(input$int, input$int_units)
+
+    paste(
+      input$int,
+      ifelse(input$int == 1, sub("s$", "", input$int_units), input$int_units)
+    )
+
+  })
+
+  # table of all input settings
+  settings_tbl <- shiny::reactive({
+    shiny::req(date_check(), time_check())
+
+    tibble::tribble(
+      ~ Setting, ~ Value,
+      "Survey Name", input$sname,
+      "Latitude", as.character(rct$lat),
+      "Longitude", as.character(rct$lng),
+      "Start Date", format(input$sd, "%D"),
+      "Stratum Length", sl_string(),
+      "Number of Strata", as.character(input$n_int),
+      "Counts per day", as.character(input$spd),
+      "Weekdays to survey", as.character(input$wd),
+      "Weekend days to survey", as.character(input$we),
+      "Sunrise offset", paste(input$es, "minutes"),
+      "Sunset offset", paste(input$ls, "minutes")
+    )
+
+  })
+
   ##############################################################################
   #
   # screen 1 reactivity
@@ -438,6 +470,8 @@ server <- function(input, output, session) {
     content = function(file) {
       pdf(file)
       lapply(calr_plots(rct$dates, rct$times, rtz()), plot)
+      grid::grid.newpage()
+      grid::grid.draw(gridExtra::tableGrob(settings_tbl(), rows = NULL))
       dev.off()
     }
   )
