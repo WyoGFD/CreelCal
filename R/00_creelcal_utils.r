@@ -115,7 +115,8 @@ gen_survey_times <- function(dates,
       dplyr::all_of("survey_times"),
       values_to = "survey_time"
     ) |>
-    dplyr::select(1:3 | dplyr::all_of("survey_time"))
+    dplyr::select(1:3 | dplyr::all_of("survey_time")) |>
+    dplyr::mutate(location = NA_character_)
 
 }
 

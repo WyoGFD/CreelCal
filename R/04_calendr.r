@@ -38,7 +38,13 @@ calr_plots <- function(dates, times, tz) {
     dplyr::group_by(.data$date) |>
     dplyr::mutate(survey_time = lubridate::with_tz(.data$survey_time, tz)) |>
     dplyr::summarize(
-      st = paste(format(.data$survey_time, "%I:%M %p"), collapse = "\n"),
+      st = paste(
+        c(
+          unique(.data$location[!is.na(.data$location)]),
+          format(.data$survey_time, "%I:%M %p")
+        ),
+        collapse = "\n"
+      ),
       .groups = "drop"
     )
 

@@ -89,9 +89,10 @@ times_to_ics <- function(times,
         "wyo.gov",
         sep = "-"
       ),
-      summary = paste(
-        "Creel Survey:",
-        format(lubridate::with_tz(.data$survey_time, tz), "%I:%M %p")
+      summary = sprintf(
+        "Creel Survey: %s%s",
+        format(lubridate::with_tz(.data$survey_time, tz), "%I:%M %p"),
+        dplyr::if_else(is.na(.data$location), "", paste0(" ", .data$location))
       ),
       descr = sprintf(
         "Stratum %d<br />%s<br />Randomized Survey Time",

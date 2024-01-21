@@ -56,19 +56,23 @@ survey_times_to_tui <- function(times, tz) {
 
   times |>
     dplyr::transmute(
-    calendarId = .data$weekend + 1,
-    body = sprintf(
-      "Randomized survey time - Stratum %d - %s",
-      .data$stratum,
-      tui_calendars$name[.data$calendarId]
-    ),
-    recurrenceRule = NA_character_,
-    start = lubridate::with_tz(.data$survey_time, tz),
-    end = .data$start,
-    category = "time",
-    location = NA_character_,
-    title = format(.data$start, "%R")
-  ) |>
-    dplyr::relocate(dplyr::all_of("title"), .after = 1)
+      calendarId = .data$weekend + 1,
+      body = sprintf(
+        "Randomized survey time - Stratum %d - %s",
+        .data$stratum,
+        tui_calendars$name[.data$calendarId]
+      ),
+      recurrenceRule = NA_character_,
+      start = lubridate::with_tz(.data$survey_time, tz),
+      end = .data$start,
+      category = "time",
+      location = .data$location,
+      title = dplyr::if_else(
+        is.na(.data$location),
+        format(.data$start, "%R"),
+        paste(format(.data$start, "%R"), .data$location, sep = " - ")
+      )
+    ) |>
+      dplyr::relocate(dplyr::all_of("title"), .after = 1)
 
 }
