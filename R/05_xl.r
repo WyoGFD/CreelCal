@@ -16,7 +16,7 @@ times_to_xl <- function(times, survey_name, tz, out_file) {
       dplyr::all_of(
         c(
           "survey", "date", "stratum", category = "name",
-          "survey number", "survey time"
+          "survey number", "survey time", "location"
         )
       )
     ) |>

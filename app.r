@@ -25,7 +25,8 @@ ui <- function(request) {
             screen3_ui,
             screen4_ui,
             screen5_ui,
-            screen6_ui
+            screen6_ui,
+            screen7_ui
           )
         ),
         shiny::column(width = 2)
@@ -127,6 +128,38 @@ server <- function(input, output, session) {
       input$spd,
       input$wd,
       input$we
+    )
+
+  })
+
+  # stratum length string
+  sl_string <- shiny::reactive({
+    shiny::req(input$int, input$int_units)
+
+    paste(
+      input$int,
+      ifelse(input$int == 1, sub("s$", "", input$int_units), input$int_units)
+    )
+
+  })
+
+  # table of all input settings
+  settings_tbl <- shiny::reactive({
+    shiny::req(date_check(), time_check())
+
+    tibble::tribble(
+      ~ Setting, ~ Value,
+      "Survey Name", input$sname,
+      "Latitude", as.character(rct$lat),
+      "Longitude", as.character(rct$lng),
+      "Start Date", format(input$sd, "%D"),
+      "Stratum Length", sl_string(),
+      "Number of Strata", as.character(input$n_int),
+      "Counts per day", as.character(input$spd),
+      "Weekdays to survey", as.character(input$wd),
+      "Weekend days to survey", as.character(input$we),
+      "Sunrise offset", paste(input$es, "minutes"),
+      "Sunset offset", paste(input$ls, "minutes")
     )
 
   })
@@ -420,6 +453,113 @@ server <- function(input, output, session) {
   # screen 6 reactivity
   #
   ##############################################################################
+
+  # starting location inputs (name & prob for each loc)
+  output$loc <- shiny::renderUI({
+    shiny::req(input$n_loc)
+
+    if (input$n_loc > 1) {
+      loc_rows <- purrr::map(
+        seq(1, input$n_loc, 1),
+        \(x) {
+          shiny::fluidRow(
+            shiny::column(
+              width = 6,
+              shiny::textInput(
+                paste("loc_nm", x, sep = "_"),
+                NULL,
+                paste("Location", x),
+                width = "100%"
+              )
+            ),
+            shiny::column(
+              width = 6,
+              shiny::numericInput(
+                paste("loc_prob", x, sep = "_"),
+                NULL,
+                1 / input$n_loc,
+                min = 0,
+                max = 1,
+                step = 0.01,
+                width = "100%"
+              )
+            )
+          )
+        }
+      )
+      shiny::tagList(
+        shiny::fluidRow(
+          shiny::column(width = 6, shiny::tags$label("Name")),
+          shiny::column(width = 6, shiny::tags$label("Probability"))
+        ),
+        loc_rows
+      )
+    }
+
+  })
+
+  loc_ready <- shiny::reactive({
+    shiny::req(input$n_loc)
+
+    input$n_loc == 1 | input$n_loc == sum(grepl("^loc_nm", names(input)))
+
+  })
+
+  loc_tbl <- shiny::reactive({
+    shiny::req(loc_ready())
+
+    if (input$n_loc > 1) {
+      tibble::tibble(
+        name = purrr::map_chr(
+          seq(1, input$n_loc, 1),
+          \(x) {
+            input[[paste("loc_nm", x, sep = "_")]]
+          }
+        ),
+        prob = purrr::map_dbl(
+          seq(1, input$n_loc, 1),
+          \(x) {
+            input[[paste("loc_prob", x, sep = "_")]]
+          }
+        )
+      )
+    }
+    
+  })
+
+  shiny::observeEvent(loc_tbl(), {
+    shiny::req(loc_ready(), rct$times)
+
+    if (input$n_loc > 1) {
+      locs <- rct$times |>
+        dplyr::group_by(.data$date) |>
+        dplyr::arrange(.data$survey_time) |>
+        dplyr::slice(1) |>
+        dplyr::ungroup() |>
+        dplyr::mutate(
+          location = sample(
+            loc_tbl()$name,
+            length(unique(rct$times$date)),
+            replace = TRUE,
+            prob = loc_tbl()$prob
+          )
+        ) |>
+        dplyr::select(dplyr::all_of(c("survey_time", "location")))
+      rct$times <- rct$times |>
+        dplyr::select(-dplyr::all_of("location")) |>
+        dplyr::left_join(locs, by = "survey_time")
+    } else {
+      rct$times <- rct$times |>
+        dplyr::mutate(location = NA_character_)
+    }
+
+  })
+
+  ##############################################################################
+  #
+  # screen 7 reactivity
+  #
+  ##############################################################################
   # xlsx download
   output$dl_xl <- shiny::downloadHandler(
     filename = function() {
@@ -438,6 +578,8 @@ server <- function(input, output, session) {
     content = function(file) {
       pdf(file)
       lapply(calr_plots(rct$dates, rct$times, rtz()), plot)
+      grid::grid.newpage()
+      grid::grid.draw(gridExtra::tableGrob(settings_tbl(), rows = NULL))
       dev.off()
     }
   )

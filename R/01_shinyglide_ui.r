@@ -204,6 +204,35 @@ screen5_ui <- shinyglide::screen(
 screen6_ui <- shinyglide::screen(
   shiny::column(
     width = 12,
+    shiny::h2("Survey Setup - Starting Location"),
+    shiny::helpText(
+      "Use the inputs below to define the available starting locations for",
+      "the survey. When more than 1 starting location is available, you can",
+      "set the name and selection probability for each location using the",
+      "inputs below the slider."
+    )
+  ),
+  shiny::column(
+    width = 12,
+    shiny::sliderInput(
+      "n_loc",
+      "Number of starting locations:",
+      min = 1,
+      max = 5,
+      value = 1,
+      step = 1,
+      width = "100%"
+    )
+  ),
+  shiny::column(
+    width = 12,
+    shiny::uiOutput("loc")
+  )
+)
+
+screen7_ui <- shinyglide::screen(
+  shiny::column(
+    width = 12,
     shiny::h2("Export Survey"),
     shiny::helpText(
       "Now that your creel survey has been created, you can download the",
